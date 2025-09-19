@@ -175,6 +175,10 @@ export class MemStorage implements IStorage {
     const cliente: Cliente = { 
       ...insertCliente, 
       id, 
+      email: insertCliente.email || null,
+      telefone: insertCliente.telefone || null,
+      cpfCnpj: insertCliente.cpfCnpj || null,
+      endereco: insertCliente.endereco || null,
       createdAt: new Date() 
     };
     this.clientes.set(id, cliente);
@@ -214,6 +218,9 @@ export class MemStorage implements IStorage {
     const peca: PecaJuridica = { 
       ...insertPeca, 
       id, 
+      clienteId: insertPeca.clienteId || null,
+      conteudo: insertPeca.conteudo || null,
+      templateUsado: insertPeca.templateUsado || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -248,6 +255,7 @@ export class MemStorage implements IStorage {
     const template: Template = { 
       ...insertTemplate, 
       id, 
+      isPublico: insertTemplate.isPublico || null,
       createdAt: new Date() 
     };
     this.templates.set(id, template);
@@ -270,6 +278,8 @@ export class MemStorage implements IStorage {
     const hist: Historico = { 
       ...insertHistorico, 
       id, 
+      clienteId: insertHistorico.clienteId || null,
+      valor: insertHistorico.valor || null,
       data: new Date() 
     };
     this.historico.set(id, hist);
