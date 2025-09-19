@@ -5,6 +5,7 @@ import { z } from "zod";
 import { 
   insertPecaJuridicaSchema, 
   insertClienteSchema,
+  insertCasoSchema,
   insertTemplateSchema,
   insertHistoricoSchema 
 } from "@shared/schema";
@@ -112,6 +113,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/clientes/:id - Buscar cliente específico
+  app.get("/api/clientes/:id", async (req, res) => {
+    try {
+      const cliente = await storage.getCliente(req.params.id);
+      if (!cliente) {
+        return res.status(404).json({ error: "Cliente não encontrado" });
+      }
+      res.json(cliente);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao buscar cliente" });
+    }
+  });
+
   // POST /api/clientes - Criar novo cliente
   app.post("/api/clientes", async (req, res) => {
     try {
@@ -123,6 +137,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Dados inválidos", details: error.errors });
       }
       res.status(500).json({ error: "Erro ao criar cliente" });
+    }
+  });
+
+  // PUT /api/clientes/:id - Atualizar cliente
+  app.put("/api/clientes/:id", async (req, res) => {
+    try {
+      const validatedData = insertClienteSchema.partial().parse(req.body);
+      const clienteAtualizado = await storage.updateCliente(req.params.id, validatedData);
+      
+      if (!clienteAtualizado) {
+        return res.status(404).json({ error: "Cliente não encontrado" });
+      }
+      
+      res.json(clienteAtualizado);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      }
+      res.status(500).json({ error: "Erro ao atualizar cliente" });
+    }
+  });
+
+  // DELETE /api/clientes/:id - Deletar cliente
+  app.delete("/api/clientes/:id", async (req, res) => {
+    try {
+      const deletado = await storage.deleteCliente(req.params.id);
+      if (!deletado) {
+        return res.status(404).json({ error: "Cliente não encontrado" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao deletar cliente" });
+    }
+  });
+
+  // ===== ROTAS DE CASOS =====
+  
+  // GET /api/casos - Listar todos os casos
+  app.get("/api/casos", async (req, res) => {
+    try {
+      const casos = await storage.getAllCasos();
+      const clientes = await storage.getAllClientes();
+      
+      // Enriquecer com dados do cliente
+      const casosComCliente = casos.map(caso => {
+        const cliente = clientes.find(c => c.id === caso.clienteId);
+        return {
+          ...caso,
+          clienteNome: cliente?.nome || 'Cliente não encontrado'
+        };
+      });
+      
+      res.json(casosComCliente);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao buscar casos" });
+    }
+  });
+
+  // GET /api/casos/:id - Buscar caso específico
+  app.get("/api/casos/:id", async (req, res) => {
+    try {
+      const caso = await storage.getCaso(req.params.id);
+      if (!caso) {
+        return res.status(404).json({ error: "Caso não encontrado" });
+      }
+      res.json(caso);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao buscar caso" });
+    }
+  });
+
+  // GET /api/clientes/:clienteId/casos - Buscar casos de um cliente
+  app.get("/api/clientes/:clienteId/casos", async (req, res) => {
+    try {
+      const casos = await storage.getCasosByCliente(req.params.clienteId);
+      res.json(casos);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao buscar casos do cliente" });
+    }
+  });
+
+  // POST /api/casos - Criar novo caso
+  app.post("/api/casos", async (req, res) => {
+    try {
+      const validatedData = insertCasoSchema.parse(req.body);
+      const novoCaso = await storage.createCaso(validatedData);
+      res.status(201).json(novoCaso);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      }
+      res.status(500).json({ error: "Erro ao criar caso" });
+    }
+  });
+
+  // PUT /api/casos/:id - Atualizar caso
+  app.put("/api/casos/:id", async (req, res) => {
+    try {
+      const validatedData = insertCasoSchema.partial().parse(req.body);
+      const casoAtualizado = await storage.updateCaso(req.params.id, validatedData);
+      
+      if (!casoAtualizado) {
+        return res.status(404).json({ error: "Caso não encontrado" });
+      }
+      
+      res.json(casoAtualizado);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      }
+      res.status(500).json({ error: "Erro ao atualizar caso" });
+    }
+  });
+
+  // DELETE /api/casos/:id - Deletar caso
+  app.delete("/api/casos/:id", async (req, res) => {
+    try {
+      const deletado = await storage.deleteCaso(req.params.id);
+      if (!deletado) {
+        return res.status(404).json({ error: "Caso não encontrado" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao deletar caso" });
     }
   });
 
