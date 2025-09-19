@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import Dashboard from "@/pages/Dashboard";
 import MinhasPecas from "@/pages/MinhasPecas";
+import ClientesECasos from "@/pages/ClientesECasos";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -15,6 +16,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/pecas" component={MinhasPecas} />
+      <Route path="/clientes" component={ClientesECasos} />
       <Route component={NotFound} />
     </Switch>
   );

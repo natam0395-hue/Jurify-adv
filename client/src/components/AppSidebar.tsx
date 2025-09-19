@@ -49,7 +49,7 @@ const menuItems = [
   },
   {
     title: "Clientes e Casos",
-    url: "#",
+    url: "/clientes",
     icon: Users,
   },
   {
