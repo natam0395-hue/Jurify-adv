@@ -29,7 +29,7 @@ const menuItems = [
   },
   {
     title: "Nova Peça Jurídica",
-    url: "/nova-peca",
+    url: "#",
     icon: Plus,
   },
   {
@@ -39,22 +39,22 @@ const menuItems = [
   },
   {
     title: "Modelos & Templates",
-    url: "/templates",
+    url: "#",
     icon: Layout,
   },
   {
     title: "Histórico de Serviços",
-    url: "/historico",
+    url: "#",
     icon: History,
   },
   {
     title: "Clientes e Casos",
-    url: "/clientes",
+    url: "#",
     icon: Users,
   },
   {
     title: "Configurações",
-    url: "/configuracoes",
+    url: "#",
     icon: Settings,
   },
 ];
@@ -80,10 +80,7 @@ export function AppSidebar() {
                     asChild 
                     data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <a href={item.url} onClick={(e) => {
-                      e.preventDefault();
-                      console.log(`Navegando para: ${item.title}`);
-                    }}>
+                    <a href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </a>

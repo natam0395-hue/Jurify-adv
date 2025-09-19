@@ -50,21 +50,24 @@ export default function MinhasPecas() {
   const [pieceToDelete, setPieceToDelete] = useState<string | null>(null);
 
   // Queries
-  const { data: pieces = [], isLoading: isLoadingPieces } = useQuery({
+  const { data: pieces = [], isLoading: isLoadingPieces } = useQuery<PieceData[]>({
     queryKey: ['/api/pecas'],
   });
 
-  const { data: clientes = [] } = useQuery({
+  const { data: clientes = [] } = useQuery<Cliente[]>({
     queryKey: ['/api/clientes'],
   });
 
   // Mutations
   const createPieceMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/pecas', {
+      const response = await fetch('/api/pecas', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error('Failed to create piece');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/pecas'] });
@@ -73,10 +76,13 @@ export default function MinhasPecas() {
 
   const updatePieceMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest(`/api/pecas/${id}`, {
+      const response = await fetch(`/api/pecas/${id}`, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error('Failed to update piece');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/pecas'] });
@@ -85,9 +91,11 @@ export default function MinhasPecas() {
 
   const deletePieceMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/pecas/${id}`, {
+      const response = await fetch(`/api/pecas/${id}`, {
         method: 'DELETE',
       });
+      if (!response.ok) throw new Error('Failed to delete piece');
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/pecas'] });
@@ -96,11 +104,11 @@ export default function MinhasPecas() {
 
   // Filtros aplicados
   const filteredPieces = useMemo(() => {
-    let filtered = pieces;
+    let filtered: PieceData[] = pieces;
 
     // Filtro de busca
     if (searchTerm) {
-      filtered = filtered.filter((piece: PieceData) =>
+      filtered = filtered.filter((piece) =>
         piece.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
         piece.clienteNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         piece.tipo.toLowerCase().includes(searchTerm.toLowerCase())
@@ -109,12 +117,12 @@ export default function MinhasPecas() {
 
     // Filtro de status
     if (statusFilter !== "todos") {
-      filtered = filtered.filter((piece: PieceData) => piece.status === statusFilter);
+      filtered = filtered.filter((piece) => piece.status === statusFilter);
     }
 
     // Filtro de tipo
     if (typeFilter !== "todos") {
-      filtered = filtered.filter((piece: PieceData) => piece.tipo === typeFilter);
+      filtered = filtered.filter((piece) => piece.tipo === typeFilter);
     }
 
     return filtered;
@@ -127,7 +135,7 @@ export default function MinhasPecas() {
   };
 
   const handleEditPiece = (id: string) => {
-    const piece = pieces.find((p: PieceData) => p.id === id);
+    const piece = pieces.find((p) => p.id === id);
     if (piece) {
       setEditingPiece(piece);
       setIsFormModalOpen(true);
@@ -196,7 +204,11 @@ export default function MinhasPecas() {
 
       {/* Lista de peças */}
       <PiecesListTable
-        pieces={filteredPieces}
+        pieces={filteredPieces.map(piece => ({
+          ...piece,
+          createdAt: new Date(piece.createdAt),
+          updatedAt: new Date(piece.updatedAt)
+        }))}
         isLoading={isLoadingPieces}
         onView={handleViewPiece}
         onEdit={handleEditPiece}
