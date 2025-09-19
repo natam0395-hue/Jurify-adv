@@ -367,7 +367,13 @@ export default function ClientesECasos() {
         open={isClientFormModalOpen}
         onClose={() => setIsClientFormModalOpen(false)}
         onSubmit={handleClientFormSubmit}
-        initialData={editingClient || undefined}
+        initialData={editingClient ? {
+          nome: editingClient.nome,
+          email: editingClient.email || "",
+          telefone: editingClient.telefone || "",
+          cpfCnpj: editingClient.cpfCnpj || "",
+          endereco: editingClient.endereco || "",
+        } : undefined}
         isEditing={!!editingClient}
         isLoading={createClientMutation.isPending || updateClientMutation.isPending}
       />
@@ -380,7 +386,18 @@ export default function ClientesECasos() {
           onSubmit={handleCaseFormSubmit}
           clienteId={selectedClientId}
           clienteName={selectedClientName}
-          initialData={editingCase || undefined}
+          initialData={editingCase ? {
+            clienteId: editingCase.clienteId,
+            numeroProcesso: editingCase.numeroProcesso || "",
+            tipoCaso: editingCase.tipoCaso,
+            status: editingCase.status,
+            assunto: editingCase.assunto,
+            valorCausa: editingCase.valorCausa || "",
+            tribunal: editingCase.tribunal || "",
+            observacoes: editingCase.observacoes || "",
+            dataInicio: editingCase.dataInicio,
+            dataFim: editingCase.dataFim || "",
+          } : undefined}
           isEditing={!!editingCase}
           isLoading={createCaseMutation.isPending || updateCaseMutation.isPending}
         />
