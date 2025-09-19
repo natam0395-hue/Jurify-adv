@@ -47,6 +47,23 @@ export const templates = pgTable("templates", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Casos Jurídicos (Processos)
+export const casos = pgTable("casos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clienteId: varchar("cliente_id").references(() => clientes.id),
+  numeroProcesso: text("numero_processo"),
+  tipoCaso: text("tipo_caso").notNull(), // Trabalhista, Civil, Criminal, etc.
+  status: text("status").notNull(), // Ativo, Finalizado, Suspenso, etc.
+  assunto: text("assunto").notNull(),
+  valorCausa: text("valor_causa"),
+  tribunal: text("tribunal"),
+  observacoes: text("observacoes"),
+  dataInicio: timestamp("data_inicio").defaultNow(),
+  dataFim: timestamp("data_fim"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Histórico de serviços
 export const historico = pgTable("historico", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -82,6 +99,12 @@ export const insertTemplateSchema = createInsertSchema(templates).omit({
   createdAt: true,
 });
 
+export const insertCasoSchema = createInsertSchema(casos).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertHistoricoSchema = createInsertSchema(historico).omit({
   id: true,
   data: true,
@@ -94,6 +117,8 @@ export type InsertCliente = z.infer<typeof insertClienteSchema>;
 export type Cliente = typeof clientes.$inferSelect;
 export type InsertPecaJuridica = z.infer<typeof insertPecaJuridicaSchema>;
 export type PecaJuridica = typeof pecasJuridicas.$inferSelect;
+export type InsertCaso = z.infer<typeof insertCasoSchema>;
+export type Caso = typeof casos.$inferSelect;
 export type InsertTemplate = z.infer<typeof insertTemplateSchema>;
 export type Template = typeof templates.$inferSelect;
 export type InsertHistorico = z.infer<typeof insertHistoricoSchema>;
