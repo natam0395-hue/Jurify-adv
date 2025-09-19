@@ -5,6 +5,8 @@ import {
   type InsertCliente,
   type PecaJuridica, 
   type InsertPecaJuridica,
+  type Caso,
+  type InsertCaso,
   type Template,
   type InsertTemplate,
   type Historico,
@@ -36,6 +38,14 @@ export interface IStorage {
   updatePecaJuridica(id: string, peca: Partial<InsertPecaJuridica>): Promise<PecaJuridica | undefined>;
   deletePecaJuridica(id: string): Promise<boolean>;
   
+  // Casos
+  getAllCasos(): Promise<Caso[]>;
+  getCaso(id: string): Promise<Caso | undefined>;
+  getCasosByCliente(clienteId: string): Promise<Caso[]>;
+  createCaso(caso: InsertCaso): Promise<Caso>;
+  updateCaso(id: string, caso: Partial<InsertCaso>): Promise<Caso | undefined>;
+  deleteCaso(id: string): Promise<boolean>;
+  
   // Templates
   getAllTemplates(): Promise<Template[]>;
   getTemplate(id: string): Promise<Template | undefined>;
@@ -51,6 +61,7 @@ export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private clientes: Map<string, Cliente>;
   private pecasJuridicas: Map<string, PecaJuridica>;
+  private casos: Map<string, Caso>;
   private templates: Map<string, Template>;
   private historico: Map<string, Historico>;
 
@@ -58,6 +69,7 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.clientes = new Map();
     this.pecasJuridicas = new Map();
+    this.casos = new Map();
     this.templates = new Map();
     this.historico = new Map();
     
@@ -141,6 +153,59 @@ export class MemStorage implements IStorage {
     this.pecasJuridicas.set(peca1.id, peca1);
     this.pecasJuridicas.set(peca2.id, peca2);
     this.pecasJuridicas.set(peca3.id, peca3);
+
+    // Casos de exemplo
+    const caso1: Caso = {
+      id: "caso-1",
+      clienteId: "cliente-1",
+      numeroProcesso: "0001234-56.2024.5.02.0001",
+      tipoCaso: "Trabalhista",
+      status: "Ativo",
+      assunto: "Rescisão Indireta por Assédio Moral",
+      valorCausa: "R$ 50.000,00",
+      tribunal: "TRT 2ª Região",
+      observacoes: "Cliente sofreu assédio moral por parte do supervisor direto.",
+      dataInicio: new Date("2024-01-15"),
+      dataFim: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const caso2: Caso = {
+      id: "caso-2",
+      clienteId: "cliente-2",
+      numeroProcesso: "0002345-67.2024.8.26.0100",
+      tipoCaso: "Civil",
+      status: "Finalizado",
+      assunto: "Cobrança de Honorários Advocatícios",
+      valorCausa: "R$ 25.000,00",
+      tribunal: "TJSP",
+      observacoes: "Caso resolvido favoravelmente ao cliente.",
+      dataInicio: new Date("2024-02-20"),
+      dataFim: new Date("2024-08-15"),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const caso3: Caso = {
+      id: "caso-3",
+      clienteId: "cliente-3",
+      numeroProcesso: "0003456-78.2024.4.03.6100",
+      tipoCaso: "Previdenciário",
+      status: "Ativo",
+      assunto: "Aposentadoria por Invalidez",
+      valorCausa: "R$ 80.000,00",
+      tribunal: "JEF",
+      observacoes: "Aguardando perícia médica do INSS.",
+      dataInicio: new Date("2024-03-10"),
+      dataFim: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.casos.set(caso1.id, caso1);
+    this.casos.set(caso2.id, caso2);
+    this.casos.set(caso3.id, caso3);
   }
 
   // Users
@@ -239,6 +304,53 @@ export class MemStorage implements IStorage {
 
   async deletePecaJuridica(id: string): Promise<boolean> {
     return this.pecasJuridicas.delete(id);
+  }
+
+  // Casos
+  async getAllCasos(): Promise<Caso[]> {
+    return Array.from(this.casos.values());
+  }
+
+  async getCaso(id: string): Promise<Caso | undefined> {
+    return this.casos.get(id);
+  }
+
+  async getCasosByCliente(clienteId: string): Promise<Caso[]> {
+    return Array.from(this.casos.values()).filter(
+      (caso) => caso.clienteId === clienteId
+    );
+  }
+
+  async createCaso(insertCaso: InsertCaso): Promise<Caso> {
+    const id = randomUUID();
+    const caso: Caso = { 
+      ...insertCaso, 
+      id, 
+      clienteId: insertCaso.clienteId || null,
+      numeroProcesso: insertCaso.numeroProcesso || null,
+      valorCausa: insertCaso.valorCausa || null,
+      tribunal: insertCaso.tribunal || null,
+      observacoes: insertCaso.observacoes || null,
+      dataInicio: insertCaso.dataInicio || new Date(),
+      dataFim: insertCaso.dataFim || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.casos.set(id, caso);
+    return caso;
+  }
+
+  async updateCaso(id: string, updateData: Partial<InsertCaso>): Promise<Caso | undefined> {
+    const caso = this.casos.get(id);
+    if (!caso) return undefined;
+    
+    const updatedCaso = { ...caso, ...updateData, updatedAt: new Date() };
+    this.casos.set(id, updatedCaso);
+    return updatedCaso;
+  }
+
+  async deleteCaso(id: string): Promise<boolean> {
+    return this.casos.delete(id);
   }
 
   // Templates
